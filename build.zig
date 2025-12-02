@@ -11,6 +11,16 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(day_1);
 
+    const day_2 = b.addExecutable(.{
+        .name = "day-2",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/days/2.zig"),
+            .target = b.graph.host,
+        }),
+    });
+
+    b.installArtifact(day_2);
+
     const run_exe = b.addRunArtifact(day_1);
 
     const run_step = b.step("run", "Run the application");
