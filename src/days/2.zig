@@ -33,7 +33,7 @@ pub fn main() !void {
             const start_mult = @max(@divFloor(start - 1, base) + 1, min_mult);
             const end_mult = @min(@divFloor(end, base), max_mult) + 1;
 
-            if (start_mult >= end_mult) break;
+            if (start_mult >= end_mult) continue;
 
             for (start_mult..end_mult) |mult| {
                 const id = base * mult;
