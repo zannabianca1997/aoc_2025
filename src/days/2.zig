@@ -22,6 +22,8 @@ pub fn main() !void {
         const start = try std.fmt.parseInt(u64, endpoints.next() orelse unreachable, 10);
         const end = try std.fmt.parseInt(u64, std.mem.trimEnd(u8, endpoints.rest(), "\n"), 10);
 
+        std.debug.print("{}-{}: ", .{ start, end });
+
         var digits: u64 = 1;
         while (true) : (digits += 1) {
             const base = (try std.math.powi(u64, 10, digits)) + 1;
@@ -38,9 +40,12 @@ pub fn main() !void {
             for (start_mult..end_mult) |mult| {
                 const id = base * mult;
 
+                std.debug.print("{} ", .{id});
                 invalid_sum += id;
             }
         }
+
+        std.debug.print("\n", .{});
     } else |err| switch (err) {
         error.StreamTooLong, // line could not fit in buffer
         error.ReadFailed, // caller can check reader implementation for diagnostics
@@ -48,6 +53,10 @@ pub fn main() !void {
     }
 
     std.debug.print("Part 1: {}\n", .{invalid_sum});
+
+    var buffer: [8327498]u8 = undefined;
+    var fba = std.heap.FixedBufferAllocator.init(&buffer);
+    const allocator = fba.allocator();
 
     invalid_sum = 0;
 
@@ -61,18 +70,14 @@ pub fn main() !void {
         const start = try std.fmt.parseInt(u64, endpoints.next() orelse unreachable, 10);
         const end = try std.fmt.parseInt(u64, std.mem.trimEnd(u8, endpoints.rest(), "\n"), 10);
 
+        var seen = std.AutoHashMapUnmanaged(u64, void){};
+
         std.debug.print("{}-{}: ", .{ start, end });
 
         var digits: u64 = 1;
         while (true) : (digits += 1) {
             var repeats: u64 = 2;
             while (true) : (repeats += 1) {
-                // checks that repeats is prime
-                if (!isPrime(repeats)) {
-                    repeats += 1;
-                    continue;
-                }
-
                 var base: u64 = 0;
                 for (0..repeats) |r| {
                     base += (try std.math.powi(u64, 10, digits * r));
@@ -86,12 +91,18 @@ pub fn main() !void {
                 const start_mult = @max(@divFloor(start - 1, base) + 1, min_mult);
                 const end_mult = @min(@divFloor(end, base), max_mult) + 1;
 
-                if (start_mult >= end_mult) break;
+                if (start_mult >= end_mult) continue;
 
                 for (start_mult..end_mult) |mult| {
                     const id = base * mult;
 
+                    if (seen.contains(id)) {
+                        continue;
+                    }
+                    try seen.put(allocator, id, void{});
+
                     std.debug.print("{} ", .{id});
+
                     invalid_sum += id;
                 }
             }
@@ -99,6 +110,8 @@ pub fn main() !void {
         }
 
         std.debug.print("\n", .{});
+
+        seen.clearRetainingCapacity();
     } else |err| switch (err) {
         error.StreamTooLong, // line could not fit in buffer
         error.ReadFailed, // caller can check reader implementation for diagnostics
