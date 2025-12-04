@@ -30,4 +30,14 @@ pub fn build(b: *std.Build) void {
     });
 
     b.installArtifact(day_3);
+
+    const day_4 = b.addExecutable(.{
+        .name = "day-4",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/days/4.zig"),
+            .target = b.graph.host,
+        }),
+    });
+
+    b.installArtifact(day_4);
 }
