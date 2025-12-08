@@ -1,4 +1,5 @@
 .zig-cache
+zig-out
 
 inputs/*.txt
 !inputs/.gitkeep
